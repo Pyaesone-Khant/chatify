@@ -1,35 +1,63 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { db } from "@/libs/firebase";
-import { getChatId } from "@/services";
+import { db, rtdb } from "@/libs/firebase";
 import { cn } from "@/services/cn";
-import { collection, getDocs } from "firebase/firestore";
+import { onValue, ref } from "firebase/database";
+import { collection, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { Avatar, Chatify } from "./common";
+import { Chatify } from "./common";
 import { LogoutModal } from "./LogoutModal";
+import { User } from "./User/User";
 
 type UserListProps = {
-    onSelect: (chatId: string, displayName: string) => void;
-    chatId: string | null;
+    onSelect: (chatId: string, user: StoredUser) => void;
+    currentChat: {
+        chatId: string,
+        user: StoredUser
+    }
 }
 
 export function UserList({
     onSelect,
-    chatId
+    currentChat
 }: UserListProps) {
 
     const { user } = useAuth();
     const [users, setUsers] = useState<StoredUser[]>([]);
 
     useEffect(() => {
-        const loadUsers = async () => {
-            const snap = await getDocs(collection(db, 'users'));
-            const allUsers = snap.docs.map(doc => doc.data()).filter(u => u.uid !== user?.uid);
+
+        if (!user) return;
+
+        const unsubscribe = onSnapshot(collection(db, 'users'), (snap) => {
+            const allUsers = snap.docs
+                .map(doc => doc.data())
+                .filter(u => u.uid !== user?.uid);
+
             setUsers(allUsers as StoredUser[]);
+
+            allUsers.forEach((u) => {
+                const presenceRef = ref(rtdb, `presence/${u.uid}`);
+                onValue(presenceRef, (snapshot) => {
+                    const isOnline = snapshot.val()?.online ?? false;
+                    setUsers(prev =>
+                        prev.map(existing =>
+                            existing.uid === u.uid ? { ...existing, isOnline } : existing
+                        )
+                    );
+                })
+            })
+
+        });
+
+        return () => {
+            unsubscribe();
         }
-        loadUsers();
-    }, []);
+    }, [user]);
+
+    const onlineUsers = users.filter(u => u.isOnline);
+    const offlineUsers = users.filter(u => !u.isOnline);
 
     return (
         <section
@@ -45,29 +73,73 @@ export function UserList({
             </article>
 
 
-            <div className="flex-1 overflow-y-scroll w-full flex flex-col gap-4 p-6 ">
+
+            <div className="flex-1 overflow-y-scroll w-full flex flex-col gap-6 p-6 ">
                 {
-                    users.map((u, i) => (
-                        <div
-                            key={i}
-                            className={cn("p-4 bg-blue-700/20 rounded-md cursor-pointer hover:bg-blue-700/70 duration-200 transition flex items-center gap-4", {
-                                "bg-blue-700/70": chatId === u.uid,
-                            })}
-                            onClick={() => onSelect(getChatId(user!.uid, u.uid), u.displayName)}
-                        >
-                            <Avatar
-                                src={u?.photoURL ?? "/next.svg"}
-                                alt="Avatar"
-                            />
-                            <h3
-                                className="text-xl font-semibold"
-                            >
-                                {u?.displayName}
-                            </h3>
-                        </div>
+                    onlineUsers.length > 0 && (
+                        <Users
+                            users={onlineUsers}
+                            currentChat={currentChat}
+                            onSelect={onSelect}
+                            title="Online"
+                        />
+                    )
+                }
+                {
+                    offlineUsers.length > 0 && (
+                        <Users
+                            users={offlineUsers}
+                            currentChat={currentChat}
+                            onSelect={onSelect}
+                            title="Offline"
+                        />
+                    )
+                }
+
+            </div>
+        </section >
+    )
+}
+
+
+const Users = ({
+    users,
+    currentChat,
+    onSelect,
+    title
+}: {
+    users: StoredUser[],
+    currentChat: {
+        chatId: string,
+        user: StoredUser
+    },
+    onSelect: (chatId: string, user: StoredUser) => void,
+    title: "Online" | "Offline"
+}) => {
+    return (
+        <section
+            className="space-y-4"
+        >
+            <h2
+                className={cn("text-lg font-bold ", {
+                    "text-gray-400": title === "Offline",
+                    "text-green-400": title === "Online"
+                })}
+            >
+                {title} Users
+            </h2>
+            <div className="w-full flex flex-col gap-4">
+                {
+                    users.map((u) => (
+                        <User
+                            key={u.uid}
+                            receiver={u}
+                            isActive={currentChat?.user.uid === u.uid}
+                            onSelect={onSelect}
+                        />
                     ))
                 }
             </div>
-        </section >
+        </section>
     )
 }

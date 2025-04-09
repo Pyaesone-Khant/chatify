@@ -1,12 +1,13 @@
 "use client";
 
-import { auth, db, provider } from "@/libs/firebase";
-import { onAuthStateChanged, signInWithPopup, signOut, User } from "firebase/auth";
+import { auth, db, provider, rtdb } from "@/libs/firebase";
+import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
+import { onDisconnect, onValue, ref, set } from "firebase/database";
 import { doc, setDoc } from "firebase/firestore";
 import { createContext, useContext, useEffect, useState } from "react";
 
 type AuthContextType = {
-    user: User | null;
+    user: StoredUser | null;
     login: () => void;
     logout: () => void;
 }
@@ -19,11 +20,11 @@ export const AuthProvider = ({
     children: React.ReactNode;
 }) => {
 
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<StoredUser | null>(null);
 
     useEffect(() => {
         return onAuthStateChanged(auth, async (currentUser) => {
-            setUser(currentUser);
+            setUser({ ...currentUser, isOnline: true } as StoredUser);
             if (currentUser) {
                 const { uid, displayName, photoURL } = currentUser;
                 await setDoc(doc(db, 'users', uid), {
@@ -32,6 +33,18 @@ export const AuthProvider = ({
                     photoURL,
                 })
             }
+
+            // for realtime👇
+            const userStatusRef = ref(rtdb, `presence/${currentUser?.uid}`);
+            const connectedRef = ref(rtdb, '.info/connected');
+
+            onValue(connectedRef, (snap) => {
+                if (snap.val() === false) return;
+
+                onDisconnect(userStatusRef).set({ online: false });
+                set(userStatusRef, { online: true });
+            });
+
         });
     }, []);
 

@@ -1,6 +1,7 @@
 // mantine css
 import '@mantine/core/styles.css';
 
+import { theme } from '@/configs/theme.config';
 import { AuthProvider } from "@/contexts/AuthContext";
 import { MantineProvider } from "@mantine/core";
 import type { Metadata } from "next";
@@ -46,7 +47,9 @@ export default function RootLayout({
             <body
                 className={` ${raleway.className}  ${ubuntu.variable} antialiased`}
             >
-                <MantineProvider>
+                <MantineProvider
+                    theme={theme}
+                >
                     <AuthProvider>
                         {children}
                     </AuthProvider>

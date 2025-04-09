@@ -5,8 +5,10 @@ import { formatDistanceToNowStrict } from "date-fns";
 
 export function Message({
     message,
+    owner,
 }: {
-    message: Message
+    message: Message,
+    owner: StoredUser
 }) {
     const { user } = useAuth();
     return (
@@ -20,11 +22,20 @@ export function Message({
                     "flex-row-reverse": user?.uid === message.uid,
                 })}
             >
-                <Avatar
-                    src={message?.photoURL ?? "/next.svg"}
-                    alt="Avatar"
-                    size={36}
-                />
+                <div
+                    className="relative"
+                >
+                    <Avatar
+                        src={message?.photoURL ?? "/next.svg"}
+                        alt="Avatar"
+                        size={36}
+                    />
+                    <div
+                        className={cn("w-2.5 aspect-square rounded-full bg-gray-500 absolute bottom-0 right-0", {
+                            "bg-green-500": (owner?.isOnline && owner?.uid === message.uid) || (user?.uid === message.uid && user?.isOnline),
+                        })}
+                    />
+                </div>
                 <p
                     className="text-gray-200 bg-blue-600 p-2 px-4 rounded-xl font-raleway "
                 >

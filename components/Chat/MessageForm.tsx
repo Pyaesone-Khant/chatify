@@ -38,6 +38,7 @@ export function MessageForm({
                 rows={1}
                 maxRows={4}
                 size="md"
+                autosize
                 classNames={{
                     root: "w-full"
                 }}

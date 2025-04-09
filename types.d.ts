@@ -13,4 +13,5 @@ interface StoredUser {
     uid: string;
     displayName: string;
     photoURL?: string;
+    isOnline?: boolean;
 }

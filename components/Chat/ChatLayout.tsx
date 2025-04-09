@@ -12,7 +12,7 @@ export function ChatLayout() {
 
     const [currentChat, setCurrentChat] = useState<{
         chatId: string,
-        displayName: string
+        user: StoredUser
     } | null>(null);
 
     return (
@@ -25,10 +25,10 @@ export function ChatLayout() {
                         className="w-full flex-1 grid grid-cols-3 "
                     >
                         <UserList
-                            onSelect={(chatId: string, displayName: string) => {
-                                setCurrentChat({ chatId, displayName });
+                            onSelect={(chatId: string, user: StoredUser) => {
+                                setCurrentChat({ chatId, user });
                             }}
-                            chatId={currentChat?.chatId || null}
+                            currentChat={currentChat!}
                         />
                         <section
                             className="col-span-2 flex flex-col bg-black/30"
@@ -37,7 +37,7 @@ export function ChatLayout() {
                                 currentChat?.chatId ? (
                                     <ChatBox
                                         chatId={currentChat?.chatId || ""}
-                                        displayName={currentChat?.displayName || "Unknown"}
+                                        receiver={currentChat?.user}
                                     />
                                 ) : (
                                     <div className="flex-1 flex flex-col items-center justify-center">
