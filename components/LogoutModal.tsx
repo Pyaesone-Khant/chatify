@@ -20,7 +20,7 @@ export function LogoutModal() {
             </Button>
 
             <div
-                className={cn("fixed inset-0 flex items-center justify-center bg-black/30 scale-0 transition duration-300 opacity-0 ", {
+                className={cn("fixed inset-0 flex items-center justify-center bg-black/30 scale-0 transition duration-300 opacity-0 z-[100] ", {
                     "scale-100 opacity-100 ": opened,
                 })}
                 onClick={() => setOpened(false)}
