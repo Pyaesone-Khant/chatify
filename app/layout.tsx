@@ -21,6 +21,19 @@ const ubuntu = Ubuntu({
 export const metadata: Metadata = {
     title: "Chatify",
     description: "A chat app built with Firebase and Next.js",
+    icons: {
+        icon: "/chatify_logo.png",
+    },
+    keywords: ["chat", "firebase", "nextjs", "chatify"],
+    openGraph: {
+        images: "https://chatify.pyaesonekhant.space/chatify_logo.png",
+        title: "Chatify",
+        description: "A chat app built with Firebase and Next.js",
+        url: "https://chatify.pyaesonekhant.space",
+        siteName: "Chatify",
+        type: "website",
+        locale: "en_US"
+    }
 };
 
 export default function RootLayout({

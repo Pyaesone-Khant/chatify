@@ -41,6 +41,8 @@ export function MessageForm({
                 classNames={{
                     root: "w-full"
                 }}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
             />
             <Button
                 onClick={handleSendMessage}
