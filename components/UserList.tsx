@@ -15,12 +15,14 @@ type UserListProps = {
     currentChat: {
         chatId: string,
         user: StoredUser
-    }
+    },
+    isInDrawer?: boolean
 }
 
 export function UserList({
     onSelect,
-    currentChat
+    currentChat,
+    isInDrawer = false
 }: UserListProps) {
 
     const { user } = useAuth();
@@ -28,7 +30,7 @@ export function UserList({
 
     useEffect(() => {
 
-        if (!user) return;
+        if (!user?.uid) return;
 
         const unsubscribe = onSnapshot(collection(db, 'users'), (snap) => {
             const allUsers = snap.docs
@@ -61,7 +63,9 @@ export function UserList({
 
     return (
         <section
-            className="flex flex-col border-r border-white/30 h-screen"
+            className={cn("flex flex-col border-r border-white/30", {
+                "flex-1 border-r-0": isInDrawer,
+            })}
         >
             <article
                 className="flex items-center justify-between gap-4 p-6 border-b border-white/20 "

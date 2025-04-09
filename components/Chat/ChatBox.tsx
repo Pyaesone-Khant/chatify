@@ -35,7 +35,7 @@ export function ChatBox({
             className="flex flex-col flex-1 px-4 max-w-2xl mx-auto w-full gap-2 pb-4 max-h-screen"
         >
             <article
-                className="bg-black/10 p-4 rounded-b-2xl"
+                className="bg-black/10 p-4 rounded-b-2xl text-right md:text-left"
             >
                 <h1
                     className="text-2xl font-bold text-blue-100"
@@ -67,6 +67,16 @@ export function ChatBox({
                         />
                     ))
                 }
+
+                {
+                    messages.length === 0 && (
+                        <div className="flex-1 flex flex-col items-center justify-center">
+                            <h1 className="text-xl font-bold text-blue-100">No messages yet!</h1>
+                            <p className="text-gray-400">Start chatting with {receiver.displayName}</p>
+                        </div>
+                    )
+                }
+
                 <div ref={messageEndRef} />
             </div>
             <MessageForm
