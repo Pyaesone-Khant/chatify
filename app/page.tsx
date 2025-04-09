@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 
 const ChatLayout = dynamic(
-    () => import('@/components/Chat/ChatLayout').then((mod) => mod.ChatLayout),
+    () => import('@/components/Chat').then((mod) => mod.ChatLayout),
     { ssr: false }
 )
 
