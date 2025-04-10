@@ -4,17 +4,22 @@ import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 import { Message } from "./Message";
 import { MessageForm } from "./MessageForm";
+import { TypingIndicator } from "./TypingIndicator";
 
 export function ChatBox({
-    chatId,
-    receiver
+    currentChat,
 }: {
-    chatId: string;
-    receiver: StoredUser;
+    currentChat: {
+        chatId: string,
+        user: StoredUser
+    }
 }) {
     const [messages, setMessages] = useState<Message[]>([]);
-
     const messageEndRef = useRef<HTMLDivElement>(null);
+
+    const [isTyping, setIsTyping] = useState<boolean>(false);
+
+    const { chatId, user: receiver } = currentChat;
 
     useEffect(() => {
         const q = query(collection(db, 'privateChats', chatId, 'messages'), orderBy('createdAt'));
@@ -28,7 +33,7 @@ export function ChatBox({
         if (messageEndRef.current) {
             messageEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [messages])
+    }, [messages, isTyping]);
 
     return (
         <section
@@ -69,6 +74,14 @@ export function ChatBox({
                 }
 
                 {
+                    isTyping && (
+                        <TypingIndicator
+                            receiver={receiver}
+                        />
+                    )
+                }
+
+                {
                     messages.length === 0 && (
                         <div className="flex-1 flex flex-col items-center justify-center">
                             <h1 className="text-xl font-bold text-blue-100">No messages yet!</h1>
@@ -81,6 +94,8 @@ export function ChatBox({
             </div>
             <MessageForm
                 chatId={chatId}
+                receiver={receiver}
+                setIsTyping={setIsTyping}
             />
         </section>
     )
